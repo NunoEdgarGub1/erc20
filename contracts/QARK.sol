@@ -459,6 +459,8 @@ contract QARK is ERC20Interface, Owned {
      * of tokens to a third party.
      */
     function approve(address spender, uint tokens) public returns (bool success) {
+        require(lockedBalances[msg.sender] == 0, 'This address MUST not start approval related transactions!');
+        require(lockedBalances[spender] == 0, 'This address MUST not start approval related transactions!');
         allowed[msg.sender][spender] = tokens;
         emit Approval(msg.sender, spender, tokens);
         return true;
@@ -470,6 +472,9 @@ contract QARK is ERC20Interface, Owned {
      * to msg.sender of the current call.
      */
     function transferFrom(address from, address to, uint tokens) public returns (bool success) {
+        require(lockedBalances[msg.sender] == 0, 'This address MUST not start approval related transactions!');
+        require(lockedBalances[from] == 0, 'This address MUST not start approval related transactions!');
+        require(lockedBalances[to] == 0, 'This address MUST not start approval related transactions!');
         balances[from] = balances[from].sub(tokens);
         allowed[from][msg.sender] = allowed[from][msg.sender].sub(tokens);
         balances[to] = balances[to].add(tokens);
