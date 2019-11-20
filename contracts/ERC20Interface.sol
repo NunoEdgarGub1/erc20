@@ -11,6 +11,7 @@ contract ERC20Interface {
     event Transfer(address indexed from, address indexed to, uint tokens);
     event Approval(address indexed tokenOwner, address indexed spender, uint tokens);
     event LockBalance(address indexed from, address indexed to, uint tokens);
+    event FreezeBalance(address indexed from, uint tokens);
     event LogUint(string key, uint value);
     event LogString(string key, string value);
     event LogAddress(string key, address value);

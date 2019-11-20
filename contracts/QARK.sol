@@ -299,6 +299,14 @@ contract QARK is ERC20Interface, Owned {
     }
     
     /*
+     * Returns the frozen balance
+     * of a given token holder.
+     */
+    function frozenBalanceOf(address tokenOwner) public view returns (uint frozenBalance) {
+        return frozenBalances[tokenOwner];
+    }
+    
+    /*
      * Automatically unfreezes
      * all tokens of msg.sender
      * if freeze time has passed.
