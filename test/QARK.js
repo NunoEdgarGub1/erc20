@@ -61,6 +61,22 @@ contract('QARK', async accounts => {
         assert.equal(balance.toString(), utils.eth('0'));
     });
     
+    it('should have mapped all roles to proper addresses', async () => {
+        const instance = await QARK.deployed();
+        const roleMap = {
+            0: acc.seller.priv,
+            1: acc.seller.ieo,
+            2: acc.management,
+            3: acc.centrum,
+            4: acc.reserve
+        }
+        let roleAddr;
+        for (var i = 0; i < Object.keys(roleMap).length; i++) {
+            roleAddr = await instance.getRoleAddress(i);
+            assert.equal(roleAddr.toString(), roleMap[i]);
+        }
+    });
+    
     it('should not transfer from frozen mgmt', async () => {
         const instance = await QARK.deployed();
         assert(await utils.transferTest(instance, {
@@ -95,22 +111,6 @@ contract('QARK', async accounts => {
             total: '1000',
             locked: '0'
         }));
-    });
-
-    it('should have mapped all roles to proper addresses', async () => {
-        const instance = await QARK.deployed();
-        const roleMap = {
-            0: acc.seller.priv,
-            1: acc.seller.ieo,
-            2: acc.management,
-            3: acc.centrum,
-            4: acc.reserve
-        }
-        let roleAddr;
-        for (var i = 0; i < Object.keys(roleMap).length; i++) {
-            roleAddr = await instance.getRoleAddress(i);
-            assert.equal(roleAddr.toString(), roleMap[i]);
-        }
     });
 
     // PRIVATE SALE
