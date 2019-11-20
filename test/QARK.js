@@ -162,7 +162,7 @@ contract('QARK', async accounts => {
 
         assert(await utils.transferTest(instance, {
             from: acc.seller.priv,
-            to: acc.buyer.priv2,
+            to: acc.random('dummyPrivateBuyerAddress'),
             amount: '1000000',
             total: '1000000',
             locked: '1000000'
@@ -307,6 +307,49 @@ contract('QARK', async accounts => {
             total: '50000',
             locked: '0'
         }));
+    });
+    
+    it('should let ieo buyer to transfer 3 800 QARK after public sale', async () => {
+        const instance = await QARK.deployed();
+        assert(await utils.transferTest(instance, {
+            from: acc.buyer.ieo,
+            to: acc.buyer.priv,
+            amount: '3800',
+            total: '2003800',
+            locked: '2000000'
+        }));
+    });
+    
+    it('should update QARK/USD conversion rate after public sale', async () => {
+        const instance = await QARK.deployed();
+        const targetRate = 40;
+        
+        await instance.setRate(targetRate, { from: acc.rateUpdater });
+        assert.equal(await instance.conversionRate(), targetRate);
+    });
+    
+    it('should let privBuyer transfer full balance w/o restrictions', async () => {
+        const instance = await QARK.deployed();
+        assert(await utils.transferTest(instance, {
+            from: acc.buyer.priv,
+            to: acc.random('transferOutAllFromPrivBuyer'),
+            amount: '2003800',
+            total: '2003800',
+            locked: '2000000'
+        }));
+    });
+    
+    it('should close restrictions period', async () => {
+        const instance = await QARK.deployed();
+        const pubSaleStart = (Math.floor(+ new Date() / 1000)) - (60 * 60 * 48); //1574035200; //OFFICIAL START DATE
+        const pubSaleEnd = Math.floor(+ new Date() / 1000) - (60 * 60 * 24); 
+        const restrictionEnd = pubSaleEnd + 1;
+        
+        await instance.setTiming(pubSaleStart, pubSaleEnd, restrictionEnd);
+        
+        assert.equal(await instance.pubSaleStart(), pubSaleStart);
+        assert.equal(await instance.pubSaleEnd(), pubSaleEnd);
+        assert.equal(await instance.restrictionEnd(), restrictionEnd);
     });
     
     /*
