@@ -352,6 +352,64 @@ contract('QARK', async accounts => {
         assert.equal(await instance.restrictionEnd(), restrictionEnd);
     });
     
+    it('should not claim reserve early', async () => {
+        const instance = await QARK.deployed();
+        const expectedError = 'Reserve can not be claimed before end of public sale!';
+        let actualError;
+        
+        try {
+            await instance.claimReserve({ from: acc.reserve });
+        } catch (e) {
+            actualError = e.reason;
+        }
+        assert.equal(actualError, expectedError);
+    });
+    
+    it('should enable reserve claim', async () => {
+        const instance = await QARK.deployed();
+        const pubSaleStart = (Math.floor(+ new Date() / 1000)) - (60 * 60 * 24 * 14); //PUBSALE STARTED 14 DAYS AGO
+        const pubSaleEnd = Math.floor(+ new Date() / 1000) - (60 * 60 * 24 * 8); //PUBSALE ENDED 8 DAYS AGO
+        const restrictionEnd = pubSaleEnd + 1; //RESTRICTIONS ENDED 1 SECOND AFTER
+        
+        await instance.setTiming(pubSaleStart, pubSaleEnd, restrictionEnd);
+        
+        assert.equal(await instance.pubSaleStart(), pubSaleStart);
+        assert.equal(await instance.pubSaleEnd(), pubSaleEnd);
+        assert.equal(await instance.restrictionEnd(), restrictionEnd);
+    });
+    
+    it('should claim reserve from exchange and private seller', async () => {
+        const instance = await QARK.deployed();
+        
+        //RECORD BALANCES PRIOR CLAIMING RESERVE
+        const preBalances = {
+            exchange: await instance.balanceOf(acc.seller.ieo),
+            privseller: await instance.balanceOf(acc.seller.priv),
+            reserve: await instance.balanceOf(acc.reserve)
+        };
+        
+        //MAKE ACTUAL CLAIM
+        await instance.claimReserve({ from: acc.reserve });
+        
+        //RECORD BALANCES AFTER CLAIM
+        const postBalances = {
+            exchange: await instance.balanceOf(acc.seller.ieo),
+            privseller: await instance.balanceOf(acc.seller.priv),
+            reserve: await instance.balanceOf(acc.reserve)
+        };
+        
+        //MAKE ASSERTIONS
+        assert.equal(postBalances.exchange.toString(), '0');
+        assert.equal(postBalances.privseller.toString(), '0');
+        assert.equal(
+            postBalances.reserve.toString(), 
+            preBalances.exchange
+                .add(preBalances.privseller)
+                .add(preBalances.reserve)
+                .toString()
+            );
+    });
+    
     /*
     it('should not transfer locked balance from private buyer to random buyer', async () => {
         const instance = await QARK.deployed();
