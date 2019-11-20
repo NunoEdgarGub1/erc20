@@ -128,6 +128,22 @@ contract('QARK', async accounts => {
         assert.equal(await instance.pubSaleEnd(), pubSaleEnd);
         assert.equal(await instance.restrictionEnd(), restrictionEnd);
     });
+    
+    it('should not change exchange address', async () => {
+        const instance = await QARK.deployed();
+        const expectedError = 'Exchange address MUST not be updated!';
+        let actualError;
+        try {
+            await instance.setRoleAddress(1, acc.random('maliciousExchangeReset'));
+        } catch (e) {
+            if(e && e.reason){
+                actualError = e.reason;
+            }
+        }
+        let balance = await instance.balanceOf(acc.random('maliciousExchangeReset'));
+        assert.equal(actualError, expectedError);
+        assert.equal(balance.toString(), '0');
+    });
 
     it('should sell 2 000 000 QARK as private sale', async () => {
         const instance = await QARK.deployed();
