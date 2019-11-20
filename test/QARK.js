@@ -156,6 +156,18 @@ contract('QARK', async accounts => {
             locked: '2000000'
         }));
     });
+    
+    it('should sell 1 000 000 QARK as private sale', async () => {
+        const instance = await QARK.deployed();
+
+        assert(await utils.transferTest(instance, {
+            from: acc.seller.priv,
+            to: acc.buyer.priv2,
+            amount: '1000000',
+            total: '1000000',
+            locked: '1000000'
+        }));
+    });
 
     // PUBLIC SALE
 
