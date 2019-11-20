@@ -185,24 +185,24 @@ contract('QARK', async accounts => {
         assert.equal(await instance.restrictionEnd(), restrictionEnd);
     });
 
-    it('should sell 3 500 QARK from Exchange to IEO buyer', async () => {
+    it('should sell 88 800 QARK from Exchange to IEO buyer', async () => {
         const instance = await QARK.deployed();
         assert(await utils.transferTest(instance, {
             from: acc.seller.ieo,
             to: acc.buyer.ieo,
-            amount: '3500',
-            total: '3500',
+            amount: '88800',
+            total: '88800',
             locked: '0'
         }));
     });
     
-    it('should sell 5 000 QARK from Exchange to privBuyer', async () => {
+    it('should sell 800 000 QARK from Exchange to privBuyer', async () => {
         const instance = await QARK.deployed();
         assert(await utils.transferTest(instance, {
             from: acc.seller.ieo,
             to: acc.buyer.priv,
-            amount: '5000',
-            total: '2005000',
+            amount: '800000',
+            total: '2800000',
             locked: '2000000'
         }));
     });
