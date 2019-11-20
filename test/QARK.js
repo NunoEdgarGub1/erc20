@@ -286,18 +286,30 @@ contract('QARK', async accounts => {
         assert.equal(await instance.conversionRate(), targetRate);
     });
     
+    it('should not transfer locked balance from private buyer to random buyer', async () => {
+        const instance = await QARK.deployed();
+        
+        assert(await utils.transferTest(instance, {
+            from: acc.buyer.priv,
+            to: acc.random('privateSellerAndRateLow'),
+            amount: '50001',
+            expectError: 'Private token trading halted because of low market prices!'
+        }));
+    });
+    
     it('should transfer unlocked balance from private buyer to random buyer', async () => {
         const instance = await QARK.deployed();
         
         assert(await utils.transferTest(instance, {
             from: acc.buyer.priv,
             to: acc.random('privateSellerAndRateLow'),
-            amount: '1500',
-            total: '1500',
+            amount: '50000',
+            total: '50000',
             locked: '0'
         }));
     });
     
+    /*
     it('should not transfer locked balance from private buyer to random buyer', async () => {
         const instance = await QARK.deployed();
         
@@ -320,6 +332,6 @@ contract('QARK', async accounts => {
             unlocked: '200'
         }));
     });
-    
+    */
 });
 
