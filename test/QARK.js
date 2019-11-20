@@ -33,6 +33,8 @@ contract('QARK', async accounts => {
         const instance = await QARK.deployed();
         await instance.setRoleAddress(2, acc.management);
         let balance = await instance.balanceOf(acc.management);
+        let frozen = await instance.frozenBalanceOf(acc.management);
+        assert.equal(frozen.toString(), utils.eth('44444400'));
         assert.equal(balance.toString(), utils.eth('44444400'));
     });
 
@@ -47,6 +49,8 @@ contract('QARK', async accounts => {
         const instance = await QARK.deployed();
         await instance.setRoleAddress(4, acc.reserve);
         let balance = await instance.balanceOf(acc.reserve);
+        let frozen = await instance.frozenBalanceOf(acc.reserve);
+        assert.equal(frozen.toString(), utils.eth('22222200'));
         assert.equal(balance.toString(), utils.eth('22222200'));
     });
     
