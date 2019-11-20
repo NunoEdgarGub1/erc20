@@ -60,6 +60,30 @@ contract('QARK', async accounts => {
         let balance = await instance.balanceOf(acc.rateUpdater);
         assert.equal(balance.toString(), utils.eth('0'));
     });
+    
+    it('should not transfer from frozen mgmt', async () => {
+        const instance = await QARK.deployed();
+        assert(await utils.transferTest(instance, {
+            from: acc.management,
+            to: acc.random('frozenManagementToRandom'),
+            amount: '1000',
+            total: '0',
+            unlocked: '0',
+            expectError: 'Frozen balance can not be spent yet, insufficient tokens!'
+        }));
+    });
+    
+    it('should not transfer from frozen reserve', async () => {
+        const instance = await QARK.deployed();
+        assert(await utils.transferTest(instance, {
+            from: acc.reserve,
+            to: acc.random('frozenReserveToRandom'),
+            amount: '1000',
+            total: '0',
+            unlocked: '0',
+            expectError: 'Frozen balance can not be spent yet, insufficient tokens!'
+        }));
+    });
 
     it('should have mapped all roles to proper addresses', async () => {
         const instance = await QARK.deployed();

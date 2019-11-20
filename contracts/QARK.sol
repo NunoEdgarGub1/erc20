@@ -442,6 +442,11 @@ contract QARK is ERC20Interface, Owned {
         //AUTOMATICALLY UNFREEZE ANY UNFREEZABLE TOKENS
         _autoUnfreeze();
         
+        //IF THE SENDER STILL HAS FROZEN BALANCE, CHECK FOR LIQUIDITY
+        if(frozenBalances[msg.sender] > 0 && balances[msg.sender] - frozenBalances[msg.sender] < tokens){
+            revert('Frozen balance can not be spent yet, insufficient tokens!');
+        }
+        
         //REQUIRE THAT SENDER HAS THE BALANCE TO MAKE THE TRANSFER
         require(balances[msg.sender] >= tokens, 'Not enough liquid tokens!');
         
