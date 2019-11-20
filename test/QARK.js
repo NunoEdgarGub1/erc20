@@ -84,6 +84,18 @@ contract('QARK', async accounts => {
             expectError: 'Frozen balance can not be spent yet, insufficient tokens!'
         }));
     });
+    
+    it('should sell 1 000 QARK from centrum', async () => {
+        const instance = await QARK.deployed();
+
+        assert(await utils.transferTest(instance, {
+            from: acc.centrum,
+            to: acc.random('initialCentrumBuyer'),
+            amount: '1000',
+            total: '1000',
+            locked: '0'
+        }));
+    });
 
     it('should have mapped all roles to proper addresses', async () => {
         const instance = await QARK.deployed();
