@@ -153,7 +153,7 @@ contract QARK is ERC20Interface, Owned {
                 if(_roleId == 2 || _roleId == 4){
                     frozenBalances[_newAddress] = initBalance;
                     frozenTiming[_newAddress] = block.timestamp + 180 * 24 * 60 * 60;
-                    emit FreezeBalance(_newAddress, initBalance);
+                    emit FreezeBalance(_newAddress, initBalance, frozenTiming[_newAddress]);
                 }
             }
         }
