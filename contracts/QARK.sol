@@ -361,7 +361,7 @@ contract QARK is ERC20Interface, Owned {
     function _postPubTransfer(address to, uint tokens) private returns (bool success) {
         
         //IF PUBLIC SALE ENDED AND EXCHANGE OR PRIVATE SELLER TRIES TO MAKE A TRANSFER
-        if(block.timestamp > pubSaleEnd && (msg.sender == roles[1] || msg.sender == roles[0])){
+        if(block.timestamp > pubSaleEnd + 7 * 24 * 60 * 60 && (msg.sender == roles[1] || msg.sender == roles[0])){
             revert('No transfer from exchange / private seller after public sale!');
         }
         
