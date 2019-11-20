@@ -207,14 +207,13 @@ contract('QARK', async accounts => {
         }));
     });
     
-    it('should transfer 500 QARK from ieoBuyer to privBuyer', async () => {
+    it('should not let privBuyer transfer locked balance during public sale', async () => {
         const instance = await QARK.deployed();
         assert(await utils.transferTest(instance, {
-            from: acc.buyer.ieo,
-            to: acc.buyer.priv,
-            amount: '500',
-            total: '2005500',
-            locked: '2000000'
+            from: acc.buyer.priv,
+            to: acc.random('lockedTokenTransferDuringIEO'),
+            amount: '1000000',
+            expectError: 'Not enough unlocked tokens!'
         }));
     });
     
@@ -222,9 +221,9 @@ contract('QARK', async accounts => {
         const instance = await QARK.deployed();
         assert(await utils.transferTest(instance, {
             from: acc.buyer.priv,
-            to: acc.buyer.ieo,
-            amount: '4000',
-            total: '7000',
+            to: acc.random('unlockedTokenTransferDuringIEO'),
+            amount: '800000',
+            total: '800000',
             locked: '0'
         }));
     });
@@ -233,20 +232,32 @@ contract('QARK', async accounts => {
         const instance = await QARK.deployed();
         assert(await utils.transferTest(instance, {
             from: acc.buyer.priv,
-            to: acc.buyer.ieo,
-            amount: '1501', //1500 would be OK!
+            to: acc.random('unlockedTokenTransferDuringIEO'),
+            amount: '100000',
+            total: '0',
+            locked: '0',
             expectError: 'Not enough unlocked tokens!'
         }));
     });
     
+    it('should transfer 50000 QARK from ieoBuyer to privBuyer', async () => {
+        const instance = await QARK.deployed();
+        assert(await utils.transferTest(instance, {
+            from: acc.buyer.ieo,
+            to: acc.buyer.priv,
+            amount: '50000',
+            total: '2050000',
+            locked: '2000000'
+        }));
+    });
     
     it('should let ieo buyer to transfer during public sale', async () => {
         const instance = await QARK.deployed();
         assert(await utils.transferTest(instance, {
             from: acc.buyer.ieo,
             to: acc.random('someRecipient'),
-            amount: '330', //1500 would be OK!
-            total: '330',
+            amount: '30000', //1500 would be OK!
+            total: '30000',
             locked: '0'
         }));
     });

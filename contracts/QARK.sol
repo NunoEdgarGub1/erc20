@@ -348,7 +348,7 @@ contract QARK is ERC20Interface, Owned {
         require(msg.sender != roles[0], 'Public transfer not allowed from private seller');
         
         //MAKE SURE THAT ONLY REGULAR TRANSACTIONS CAN BE EXECUTED NOT INVOLVING LOCKED TOKENS
-        require(balances[msg.sender].sub(lockedBalances[msg.sender]) > tokens, 'Not enough unlocked tokens!');
+        require(balances[msg.sender].sub(lockedBalances[msg.sender]) >= tokens, 'Not enough unlocked tokens!');
         emit LogAddress('PublicSaleFrom', msg.sender);
         //MAKE A REGULAR TRANSFER
         return _regularTransfer(to, tokens);
