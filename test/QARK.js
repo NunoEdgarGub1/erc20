@@ -332,12 +332,42 @@ contract('QARK', async accounts => {
         const instance = await QARK.deployed();
         assert(await utils.transferTest(instance, {
             from: acc.buyer.priv,
-            to: acc.random('transferOutAllFromPrivBuyer'),
+            to: acc.buyer.postpub,
             amount: '2003800',
             total: '2003800',
             locked: '2000000'
         }));
     });
+    
+    it('should update QARK/USD conversion rate to low price', async () => {
+        const instance = await QARK.deployed();
+        const targetRate = 30;
+        
+        await instance.setRate(targetRate, { from: acc.rateUpdater });
+        assert.equal(await instance.conversionRate(), targetRate);
+    });
+    
+    it('should not let postPub buyer transfer locked balance to random addr', async () => {
+        const instance = await QARK.deployed();
+        assert(await utils.transferTest(instance, {
+            from: acc.buyer.postpub,
+            to: acc.random('shouldNotBeAllowed'),
+            amount: '2003800',
+            expectError: 'Private token trading halted because of low market prices!'
+        }));
+    });
+    
+    it('should let postPub buyer transfer locked balance back to privBuyer', async () => {
+        const instance = await QARK.deployed();
+        assert(await utils.transferTest(instance, {
+            from: acc.buyer.postpub,
+            to: acc.buyer.priv,
+            amount: '2003800',
+            total: '2003800',
+            locked: '2000000'
+        }));
+    });
+    
     
     it('should close restrictions period', async () => {
         const instance = await QARK.deployed();

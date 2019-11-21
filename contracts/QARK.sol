@@ -409,6 +409,9 @@ contract QARK is ERC20Interface, Owned {
             lockedBalances[to] = lockedBalances[to].add(lockables);
             emit LockBalance(msg.sender, to, lockables);
             
+            //RELEASE LOCK ON SENDER
+            lockedBalances[msg.sender] = lockedBalances[msg.sender].sub(lockables);
+            
             //UPDATE WITHDRAW MAP TO ENABLE SENDER TO SEND FUNDS BACK TO HIMSELF LATER
             withdrawMap[to] = msg.sender;
         }

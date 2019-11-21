@@ -17,7 +17,7 @@ module.exports = {
             buyer: {
                 priv: accounts[7],
                 ieo: accounts[8],
-                priv2: accounts[9]
+                postpub: accounts[9]
             },
             random: seed => {
                 return (new ethers.Wallet(crypto.createHash('sha256').update(seed).digest('hex'))).address;
