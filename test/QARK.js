@@ -408,12 +408,11 @@ contract('QARK', async accounts => {
         assert.equal(await instance.restrictionEnd(), restrictionEnd);
     });
     
-    it('should claim reserve from exchange and private seller', async () => {
+    it('should claim reserve from private seller', async () => {
         const instance = await QARK.deployed();
         
         //RECORD BALANCES PRIOR CLAIMING RESERVE
         const preBalances = {
-            exchange: await instance.balanceOf(acc.seller.ieo),
             privseller: await instance.balanceOf(acc.seller.priv),
             reserve: await instance.balanceOf(acc.reserve)
         };
@@ -423,19 +422,16 @@ contract('QARK', async accounts => {
         
         //RECORD BALANCES AFTER CLAIM
         const postBalances = {
-            exchange: await instance.balanceOf(acc.seller.ieo),
             privseller: await instance.balanceOf(acc.seller.priv),
             reserve: await instance.balanceOf(acc.reserve)
         };
         
         //MAKE ASSERTIONS
-        assert.equal(postBalances.exchange.toString(), '0');
         assert.equal(postBalances.privseller.toString(), '0');
         assert.equal(
             postBalances.reserve.toString(), 
-            preBalances.exchange
+            preBalances.reserve
                 .add(preBalances.privseller)
-                .add(preBalances.reserve)
                 .toString()
             );
     });
