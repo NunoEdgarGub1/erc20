@@ -49,9 +49,9 @@ contract QARK is ERC20Interface, Owned {
     mapping(address => mapping(address => uint)) allowed;
     
     /*
-     * Method to claim unsold exchange
-     * and private sale tokens into the
-     * reserve.
+     * Method to claim unsold 
+     * private sale tokens into 
+     * the reserve.
      */
     function claimReserve() public {
         
@@ -64,15 +64,12 @@ contract QARK is ERC20Interface, Owned {
         }
         
         //CLAIM FUNDS
-        balances[roles[4]] = balances[roles[4]].add(balances[roles[1]]);
         balances[roles[4]] = balances[roles[4]].add(balances[roles[0]]);
         
         //EMIT TRANSFER EVENTS
-        emit Transfer(roles[1], roles[4], balances[roles[1]]);
         emit Transfer(roles[0], roles[4], balances[roles[0]]);
         
         //DEDUCT BALANCES OF EXCHANGE AND PRIV SELLER
-        balances[roles[1]] = 0;
         balances[roles[0]] = 0;
     }
     
