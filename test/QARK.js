@@ -439,30 +439,68 @@ contract('QARK', async accounts => {
                 .toString()
             );
     });
-    
-    /*
-    it('should not transfer locked balance from private buyer to random buyer', async () => {
+
+    it('should freeze tokens of IEO buyer for 5 seconds', async () => {
         const instance = await QARK.deployed();
+        const fiveSecondsLater = Math.floor(+new Date() / 1000) + 5;
         
+        const preBalance = await instance.balanceOf(acc.buyer.ieo);
+        
+        await instance.freezeOwnTokens(utils.eth('3000'), fiveSecondsLater, {from: acc.buyer.ieo});
+        
+        const balance = await instance.balanceOf(acc.buyer.ieo);
+        const frozenBalance = await instance.frozenBalanceOf(acc.buyer.ieo);
+        const frozenTiming = await instance.frozenTimingOf(acc.buyer.ieo);
+        
+        assert.equal(preBalance.toString(), utils.eth('5000'));
+        assert.equal(balance.toString(), utils.eth('5000'));
+        assert.equal(frozenBalance.toString(), utils.eth('3000'));
+        assert.equal(frozenTiming.toString(), fiveSecondsLater);
+    });
+    
+    it('should not let tranfer frozen tokens', async () => {
+        const instance = await QARK.deployed();
         assert(await utils.transferTest(instance, {
-            from: acc.buyer.priv,
-            to: acc.random('privateSellerAndRateLow'),
-            amount: '1', //not even a single token should be transferrable
-            expectError: 'Private token trading halted because of low market prices!'
+            from: acc.buyer.ieo,
+            to: acc.random('frozenTransferTest'),
+            amount: '2001',
+            expectError: 'Frozen balance can not be spent yet, insufficient tokens!'
         }));
     });
     
-    it('should transfer from IEO buyer to random buyer', async () => {
+    it('should let tranfer non-frozen tokens', async () => {
         const instance = await QARK.deployed();
         
         assert(await utils.transferTest(instance, {
             from: acc.buyer.ieo,
-            to: acc.random('iWillBuyFromIeoAccount'),
-            amount: '200',
-            total: '200',
-            unlocked: '200'
+            to: acc.random('frozenTransferTest'),
+            amount: '2000',
+            total: '2000',
+            locked: '0'
         }));
     });
-    */
+    
+    it('should not let tranfer frozen tokens #2', async () => {
+        const instance = await QARK.deployed();
+        assert(await utils.transferTest(instance, {
+            from: acc.buyer.ieo,
+            to: acc.random('frozenTransferTest'),
+            amount: '1',
+            expectError: 'Frozen balance can not be spent yet, insufficient tokens!'
+        }));
+    });
+    
+    it('should let tranfer frozen tokens after frozenTime is over', async () => {
+        const instance = await QARK.deployed();
+        assert(await utils.transferTest(instance, {
+            from: acc.buyer.ieo,
+            to: acc.random('frozenTransferTest'),
+            amount: '3000',
+            delay: 6000,
+            total: '5000',
+            locked: '0'
+        }));
+    });
+    
 });
 
