@@ -307,6 +307,16 @@ contract QARK is ERC20Interface, Owned {
     }
     
     /*
+     * Returns the UNIX timestamp
+     * until when some tokens
+     * of a given token holder
+     * are frozen.
+     */
+    function frozenTimingOf(address tokenOwner) public view returns (uint until) {
+        return frozenTiming[tokenOwner];
+    }
+    
+    /*
      * Automatically unfreezes
      * all tokens of msg.sender
      * if freeze time has passed.
