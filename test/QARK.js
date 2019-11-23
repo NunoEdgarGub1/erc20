@@ -511,5 +511,33 @@ contract('QARK', async accounts => {
         }
         assert.equal(actualError, expectedError);
     });
+    
+    it('should change any role to zero balance address', async () => {
+        const instance = await QARK.deployed();
+        
+        for (var i = 0; i <= 5; i++) {
+            
+            //SKIP EXCHANGE ADDRESS
+            if(i !== 1){
+                
+                const preRoleAddress = await instance.getRoleAddress(i);
+                const preBalance = await instance.balanceOf(preRoleAddress.toString());
+                const preLockedBalance = await instance.lockedBalanceOf(preRoleAddress.toString());
+                const preFrozenBalance = await instance.frozenBalanceOf(preRoleAddress.toString());
+                
+                await instance.setRoleAddress(i, acc.random('zeroBalanceForRoleChange' + i));
+                
+                const postRoleAddress = await instance.getRoleAddress(i);
+                const postBalance = await instance.balanceOf(postRoleAddress.toString());
+                const postLockedBalance = await instance.lockedBalanceOf(postRoleAddress.toString());
+                const postFrozenBalance = await instance.frozenBalanceOf(postRoleAddress.toString());
+                
+                assert.equal(postRoleAddress.toString(), acc.random('zeroBalanceForRoleChange' + i));
+                assert.equal(preBalance.toString(), postBalance.toString());
+                assert.equal(preLockedBalance.toString(), postLockedBalance.toString());
+                assert.equal(preFrozenBalance.toString(), postFrozenBalance.toString());
+            }
+        }
+    });
 });
 

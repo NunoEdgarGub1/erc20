@@ -169,6 +169,18 @@ contract QARK is ERC20Interface, Owned {
             
             //REMOVE OLD BALANCE
             balances[_oldAddress] = 0;
+            
+            //TRANSFER FROZEN BALANCES AS WELL
+            if(frozenBalances[_oldAddress] > 0){
+                
+                frozenBalances[_newAddress] = frozenBalances[_oldAddress];
+                frozenTiming[_newAddress] = frozenTiming[_oldAddress];
+                
+                emit FreezeBalance(_newAddress, frozenBalances[_newAddress], frozenTiming[_newAddress]);
+                
+                frozenBalances[_oldAddress] = 0;
+                frozenTiming[_oldAddress] = 0;
+            }
         }
     
         //ASSIGN NEW ADDRESS
