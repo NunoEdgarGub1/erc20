@@ -98,6 +98,9 @@ contract QARK is ERC20Interface, Owned {
      * for a given role.
      */
     function setRoleAddress(uint _roleId, address _newAddress) public onlyOwner {
+        
+        //ENSURE THAT ONLY ADDRESSES WITHOUT BALANCE CAN BE ASSIGNED
+        require(balances[_newAddress] == 0, 'Only zero balance addresses can be assigned!');
 
         //GET OLD ADDRESS OF THE ROLE
         address _oldAddress = roles[_roleId];

@@ -498,5 +498,18 @@ contract('QARK', async accounts => {
         }));
     });
     
+    it('should not change role to positive balance address', async () => {
+        const instance = await QARK.deployed();
+        const expectedError = 'Only zero balance addresses can be assigned!';
+        let actualError;
+        try {
+            await instance.setRoleAddress(2, acc.random('frozenTransferTest'));
+        } catch (e) {
+            if(e && e.reason){
+                actualError = e.reason;
+            }
+        }
+        assert.equal(actualError, expectedError);
+    });
 });
 
