@@ -4,6 +4,6 @@ RUN npm i -g --unsafe-perm=true --allow-root truffle
 COPY . /app
 WORKDIR /app
 RUN npm init -y && npm i --save ethers
-RUN truffle test --show-events --compile-all
+RUN truffle compile && truffle test --show-events --compile-all
 ENTRYPOINT ["truffle"]
 CMD ["test", "--show-events", "--compile-all"]
