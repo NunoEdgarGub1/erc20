@@ -49,7 +49,7 @@ module.exports = {
         
         //IF WE NEED TO DELAY
         if(options.delay){
-            await timeout(options.delay);
+            await module.exports.timeout(options.delay);
         }
         
         //MAKE THE TRANSFER FROM PRIVATE SELLER
@@ -81,9 +81,9 @@ module.exports = {
             }, null, 8));
         }
         return result;
+    },
+    
+    timeout: function(ms){
+        return new Promise(resolve => setTimeout(resolve, ms));
     }
-}
-
-function timeout(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
 }
