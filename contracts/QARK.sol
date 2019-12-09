@@ -230,6 +230,7 @@ contract QARK is ERC20Interface, Owned {
      * restrictions related timings.
      */
     function setTiming(uint _pubSaleStart, uint _pubSaleEnd, uint _restrictionEnd) public onlyOwner {
+        require(pubSaleStart == 0 && pubSaleEnd == 0 && restrictionEnd == 0, 'Timing only can be set once');
         pubSaleStart = _pubSaleStart;
         pubSaleEnd = _pubSaleEnd;
         restrictionEnd = _restrictionEnd;
