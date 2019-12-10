@@ -81,8 +81,8 @@ contract('QARK', async accounts => {
     it('should set public sale period', async () => {
         const instance = await QARK.deployed();
         const pubSaleStart = Math.floor(+ new Date() / 1000) - 60; //OFFICIAL START DATE
-        const pubSaleEnd = pubSaleStart + 65;
-        const restrictionEnd = pubSaleEnd + 5;
+        const pubSaleEnd = pubSaleStart + 265;
+        const restrictionEnd = pubSaleEnd + 65;
 
         console.log('TIMING ::', pubSaleStart, pubSaleEnd, restrictionEnd);
 
