@@ -2,7 +2,7 @@ const ethers = require('ethers');
 const crypto = require('crypto');
 
 module.exports = {
-    
+
     acc: accounts => {
         const accMap =  {
             owner: accounts[0],
@@ -28,15 +28,15 @@ module.exports = {
         console.log(accMap);
         return accMap;
     },
-    
+
     bn: input => {
         return ethers.utils.bigNumberify(input);
     },
-    
+
     eth: input => {
         return ethers.utils.parseEther(input).toString();
     },
-    
+
     balance: async (instance, address) => {
         const result = {
             unlocked: await instance.balanceOf(address),
@@ -46,14 +46,14 @@ module.exports = {
         result.locked = result.locked.toString();
         return result;
     },
-    
+
     transferTest: async (instance, options) => {
-        
+
         //IF WE NEED TO DELAY
         if(options.delay){
             await module.exports.timeout(options.delay);
         }
-        
+
         //MAKE THE TRANSFER FROM PRIVATE SELLER
         try{
             await instance.transfer(options.to, module.exports.eth(options.amount), { from: options.from });
@@ -62,29 +62,29 @@ module.exports = {
                 return true;
             }
             throw new Error(JSON.stringify({
-                expectError: options.expectError ? options.expectError : 'None', 
+                expectError: options.expectError ? options.expectError : 'None',
                 actualError: err.reason,
             }, null, 8));
         }
-        
+
         options.total = options.total ? options.total : '0';
         options.locked = options.locked ? options.locked : '0';
-        
+
         let balance = await module.exports.balance(instance, options.to);
 
         //BALANCE SHOULD EQUAL THE TRANSFERRED AMOUNT, NO LOCKS
         const result = balance.total === module.exports.eth(options.total) && balance.locked === module.exports.eth(options.locked);
         if(result !== true){
             throw new Error(JSON.stringify({
-                realTotal: balance.total, 
-                wantTotal: module.exports.eth(options.total), 
-                realLockd: balance.locked, 
+                realTotal: balance.total,
+                wantTotal: module.exports.eth(options.total),
+                realLockd: balance.locked,
                 wantLockd: module.exports.eth(options.locked)
             }, null, 8));
         }
         return result;
     },
-    
+
     timeout: function(ms){
         return new Promise(resolve => setTimeout(resolve, ms));
     }
