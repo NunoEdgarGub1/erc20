@@ -22,13 +22,6 @@ contract('QARK', async accounts => {
         assert.equal(balance.toString(), utils.eth('133333200'));
     });
 
-    it('should initialize exchange with 88 88 800 QARK balance', async () => {
-        const instance = await QARK.deployed();
-        await instance.setRoleAddress(1, acc.seller.ieo);
-        let balance = await instance.balanceOf(acc.seller.ieo);
-        assert.equal(balance.toString(), utils.eth('88888800'));
-    });
-
     it('should initialize management with 44 44 400 QARK balance', async () => {
         const instance = await QARK.deployed();
         await instance.setRoleAddress(2, acc.management);
@@ -61,22 +54,6 @@ contract('QARK', async accounts => {
         assert.equal(balance.toString(), utils.eth('0'));
     });
 
-    it('should have mapped all roles to proper addresses', async () => {
-        const instance = await QARK.deployed();
-        const roleMap = {
-            0: acc.seller.priv,
-            1: acc.seller.ieo,
-            2: acc.management,
-            3: acc.centrum,
-            4: acc.reserve
-        }
-        let roleAddr;
-        for (var i = 0; i < Object.keys(roleMap).length; i++) {
-            roleAddr = await instance.getRoleAddress(i);
-            assert.equal(roleAddr.toString(), roleMap[i]);
-        }
-    });
-
     it('should not transfer from frozen mgmt', async () => {
         const instance = await QARK.deployed();
         assert(await utils.transferTest(instance, {
@@ -101,25 +78,11 @@ contract('QARK', async accounts => {
         }));
     });
 
-    it('should sell 1 000 QARK from centrum', async () => {
-        const instance = await QARK.deployed();
-
-        assert(await utils.transferTest(instance, {
-            from: acc.centrum,
-            to: acc.random('initialCentrumBuyer'),
-            amount: '1000',
-            total: '1000',
-            locked: '0'
-        }));
-    });
-
-    // PRIVATE SALE
-
     it('should set public sale period', async () => {
         const instance = await QARK.deployed();
-        const pubSaleStart = 1574035200; //OFFICIAL START DATE
-        const pubSaleEnd = pubSaleStart + 60 * 60 * 24 * 30 * 2;
-        const restrictionEnd = pubSaleEnd + 60 * 60 * 24 * 30 * 6
+        const pubSaleStart = Math.floor(+ new Date() / 1000) - 60; //OFFICIAL START DATE
+        const pubSaleEnd = pubSaleStart + 65;
+        const restrictionEnd = pubSaleEnd + 5;
 
         //FROM NOW UNTIL THE OFFICIAL CLOSE TIME
         await instance.setTiming(pubSaleStart, pubSaleEnd, restrictionEnd);
@@ -127,6 +90,40 @@ contract('QARK', async accounts => {
         assert.equal(await instance.pubSaleStart(), pubSaleStart);
         assert.equal(await instance.pubSaleEnd(), pubSaleEnd);
         assert.equal(await instance.restrictionEnd(), restrictionEnd);
+    });
+
+    it('should initialize exchange with 88 88 800 QARK balance', async () => {
+        const instance = await QARK.deployed();
+        await instance.setRoleAddress(1, acc.seller.exchange.hot);
+        let balance = await instance.balanceOf(acc.seller.exchange.hot);
+        assert.equal(balance.toString(), utils.eth('88888800'));
+    });
+
+    it('should immediately forward 88 88 800 QARK from Exchange', async () => {
+        const instance = await QARK.deployed();
+        assert(await utils.transferTest(instance, {
+            from: acc.seller.exchange.hot,
+            to: acc.seller.exchange.cold,
+            amount: '88888800',
+            total: '88888800',
+            locked: '0'
+        }));
+    });
+
+    it('should have mapped all roles to proper addresses', async () => {
+        const instance = await QARK.deployed();
+        const roleMap = {
+            0: acc.seller.priv,
+            1: acc.seller.exchange.hot,
+            2: acc.management,
+            3: acc.centrum,
+            4: acc.reserve
+        }
+        let roleAddr;
+        for (var i = 0; i < Object.keys(roleMap).length; i++) {
+            roleAddr = await instance.getRoleAddress(i);
+            assert.equal(roleAddr.toString(), roleMap[i]);
+        }
     });
 
     it('should not change exchange address', async () => {
@@ -143,6 +140,18 @@ contract('QARK', async accounts => {
         let balance = await instance.balanceOf(acc.random('maliciousExchangeReset'));
         assert.equal(actualError, expectedError);
         assert.equal(balance.toString(), '0');
+    });
+
+    it('should sell 1 000 QARK from centrum', async () => {
+        const instance = await QARK.deployed();
+
+        assert(await utils.transferTest(instance, {
+            from: acc.centrum,
+            to: acc.random('initialCentrumBuyer'),
+            amount: '1000',
+            total: '1000',
+            locked: '0'
+        }));
     });
 
     it('should sell 2 000 000 QARK as private sale', async () => {
@@ -169,27 +178,11 @@ contract('QARK', async accounts => {
         }));
     });
 
-    // PUBLIC SALE
-
-    it('should start public sale', async () => {
-        const instance = await QARK.deployed();
-        const pubSaleStart = Math.floor(+new Date() / 1000) - 60; //1574035200; //OFFICIAL START DATE
-        const pubSaleEnd = pubSaleStart + 60 * 60 * 24 * 30 * 2;
-        const restrictionEnd = pubSaleEnd + 60 * 60 * 24 * 30 * 6
-
-        //FROM NOW UNTIL THE OFFICIAL CLOSE TIME
-        await instance.setTiming(pubSaleStart, pubSaleEnd, restrictionEnd);
-
-        assert.equal(await instance.pubSaleStart(), pubSaleStart);
-        assert.equal(await instance.pubSaleEnd(), pubSaleEnd);
-        assert.equal(await instance.restrictionEnd(), restrictionEnd);
-    });
-
     it('should sell 88 800 QARK from Exchange to IEO buyer', async () => {
         const instance = await QARK.deployed();
         assert(await utils.transferTest(instance, {
-            from: acc.seller.ieo,
-            to: acc.buyer.ieo,
+            from: acc.seller.exchange.cold,
+            to: acc.random('someIeoBuyer'),
             amount: '88800',
             total: '88800',
             locked: '0'
@@ -199,7 +192,7 @@ contract('QARK', async accounts => {
     it('should sell 800 000 QARK from Exchange to privBuyer', async () => {
         const instance = await QARK.deployed();
         assert(await utils.transferTest(instance, {
-            from: acc.seller.ieo,
+            from: acc.seller.exchange.cold,
             to: acc.buyer.priv,
             amount: '800000',
             total: '2800000',
@@ -243,7 +236,7 @@ contract('QARK', async accounts => {
     it('should transfer 50000 QARK from ieoBuyer to privBuyer', async () => {
         const instance = await QARK.deployed();
         assert(await utils.transferTest(instance, {
-            from: acc.buyer.ieo,
+            from: acc.seller.exchange.cold,
             to: acc.buyer.priv,
             amount: '50000',
             total: '2050000',
@@ -254,7 +247,7 @@ contract('QARK', async accounts => {
     it('should let ieo buyer to transfer during public sale', async () => {
         const instance = await QARK.deployed();
         assert(await utils.transferTest(instance, {
-            from: acc.buyer.ieo,
+            from: acc.seller.exchange.cold,
             to: acc.random('someRecipient'),
             amount: '30000', //1500 would be OK!
             total: '30000',
@@ -264,16 +257,12 @@ contract('QARK', async accounts => {
 
     it('should close public sale', async () => {
         const instance = await QARK.deployed();
-        const pubSaleStart = (Math.floor(+ new Date() / 1000)) - (60 * 60 * 24); //1574035200; //OFFICIAL START DATE
-        const pubSaleEnd = Math.floor(+ new Date() / 1000) - 60;
-        const restrictionEnd = pubSaleEnd + 60 * 60 * 24 * 30 * 6
-
-        //FROM NOW UNTIL THE OFFICIAL CLOSE TIME
-        await instance.setTiming(pubSaleStart, pubSaleEnd, restrictionEnd);
-
-        assert.equal(await instance.pubSaleStart(), pubSaleStart);
-        assert.equal(await instance.pubSaleEnd(), pubSaleEnd);
-        assert.equal(await instance.restrictionEnd(), restrictionEnd);
+        const pubSaleEnd = await instance.pubSaleEnd();
+        while(parseInt(pubSaleEnd.toString()) >= Math.floor(+ new Date() / 1000)){
+            console.log(parseInt(pubSaleEnd.toString()) - Math.floor(+ new Date() / 1000), 'remaining...');
+            await utils.timeout(1000);
+        }
+        assert(parseInt(pubSaleEnd.toString()) < Math.floor(+ new Date() / 1000));
     });
 
     it('should update QARK/USD conversion rate after public sale', async () => {
@@ -312,7 +301,7 @@ contract('QARK', async accounts => {
     it('should let ieo buyer to transfer 3 800 QARK after public sale', async () => {
         const instance = await QARK.deployed();
         assert(await utils.transferTest(instance, {
-            from: acc.buyer.ieo,
+            from: acc.seller.exchange.cold,
             to: acc.buyer.priv,
             amount: '3800',
             total: '2003800',
@@ -371,15 +360,12 @@ contract('QARK', async accounts => {
 
     it('should close restrictions period', async () => {
         const instance = await QARK.deployed();
-        const pubSaleStart = (Math.floor(+ new Date() / 1000)) - (60 * 60 * 48); //1574035200; //OFFICIAL START DATE
-        const pubSaleEnd = Math.floor(+ new Date() / 1000) - (60 * 60 * 24);
-        const restrictionEnd = pubSaleEnd + 1;
-
-        await instance.setTiming(pubSaleStart, pubSaleEnd, restrictionEnd);
-
-        assert.equal(await instance.pubSaleStart(), pubSaleStart);
-        assert.equal(await instance.pubSaleEnd(), pubSaleEnd);
-        assert.equal(await instance.restrictionEnd(), restrictionEnd);
+        const restrictionEnd = await instance.restrictionEnd();
+        while(parseInt(restrictionEnd.toString()) >= Math.floor(+ new Date() / 1000)){
+            console.log(parseInt(restrictionEnd.toString()) - Math.floor(+ new Date() / 1000), 'remaining...');
+            await utils.timeout(1000);
+        }
+        assert(parseInt(restrictionEnd.toString()) < Math.floor(+ new Date() / 1000));
     });
 
     it('should not claim reserve early', async () => {
@@ -394,7 +380,7 @@ contract('QARK', async accounts => {
         }
         assert.equal(actualError, expectedError);
     });
-
+/*
     it('should enable reserve claim', async () => {
         const instance = await QARK.deployed();
         const pubSaleStart = (Math.floor(+ new Date() / 1000)) - (60 * 60 * 24 * 14); //PUBSALE STARTED 14 DAYS AGO
@@ -435,31 +421,36 @@ contract('QARK', async accounts => {
                 .toString()
             );
     });
-
+*/
     it('should freeze tokens of IEO buyer for 5 seconds', async () => {
         const instance = await QARK.deployed();
         const fiveSecondsLater = Math.floor(+new Date() / 1000) + 5;
 
-        const preBalance = await instance.balanceOf(acc.buyer.ieo);
+        const preBalance = await instance.balanceOf(acc.seller.exchange.cold);
 
-        await instance.freezeOwnTokens(utils.eth('3000'), fiveSecondsLater, {from: acc.buyer.ieo});
+        await instance.freezeOwnTokens(utils.eth('3000'), fiveSecondsLater, {from: acc.seller.exchange.cold});
 
-        const balance = await instance.balanceOf(acc.buyer.ieo);
-        const frozenBalance = await instance.frozenBalanceOf(acc.buyer.ieo);
-        const frozenTiming = await instance.frozenTimingOf(acc.buyer.ieo);
+        const balance = await instance.balanceOf(acc.seller.exchange.cold);
+        const frozenBalance = await instance.frozenBalanceOf(acc.seller.exchange.cold);
+        const frozenTiming = await instance.frozenTimingOf(acc.seller.exchange.cold);
 
-        assert.equal(preBalance.toString(), utils.eth('5000'));
-        assert.equal(balance.toString(), utils.eth('5000'));
+        assert.equal(preBalance.toString(), balance.toString());
         assert.equal(frozenBalance.toString(), utils.eth('3000'));
         assert.equal(frozenTiming.toString(), fiveSecondsLater);
     });
 
     it('should not let tranfer frozen tokens', async () => {
         const instance = await QARK.deployed();
+
+        const balance = await instance.balanceOf(acc.seller.exchange.cold);
+        const frozenBalance = await instance.frozenBalanceOf(acc.seller.exchange.cold);
+        const nonFrozen = balance.sub(frozenBalance).toString();
+        const transferable = parseInt(nonFrozen.substring(0, nonFrozen.length - 18));
+
         assert(await utils.transferTest(instance, {
-            from: acc.buyer.ieo,
+            from: acc.seller.exchange.cold,
             to: acc.random('frozenTransferTest'),
-            amount: '2001',
+            amount: (transferable + 1).toString(),
             expectError: 'Frozen balance can not be spent yet, insufficient tokens!'
         }));
     });
@@ -467,11 +458,16 @@ contract('QARK', async accounts => {
     it('should let tranfer non-frozen tokens', async () => {
         const instance = await QARK.deployed();
 
+        const balance = await instance.balanceOf(acc.seller.exchange.cold);
+        const frozenBalance = await instance.frozenBalanceOf(acc.seller.exchange.cold);
+        const nonFrozen = balance.sub(frozenBalance).toString();
+        const transferable = parseInt(nonFrozen.substring(0, nonFrozen.length - 18));
+
         assert(await utils.transferTest(instance, {
-            from: acc.buyer.ieo,
-            to: acc.random('frozenTransferTest'),
-            amount: '2000',
-            total: '2000',
+            from: acc.seller.exchange.cold,
+            to: acc.random('nonFrozenTransferTest'),
+            amount: transferable.toString(),
+            total: transferable.toString(),
             locked: '0'
         }));
     });
@@ -479,7 +475,7 @@ contract('QARK', async accounts => {
     it('should not let tranfer frozen tokens #2', async () => {
         const instance = await QARK.deployed();
         assert(await utils.transferTest(instance, {
-            from: acc.buyer.ieo,
+            from: acc.seller.exchange.cold,
             to: acc.random('frozenTransferTest'),
             amount: '1',
             expectError: 'Frozen balance can not be spent yet, insufficient tokens!'
@@ -489,11 +485,11 @@ contract('QARK', async accounts => {
     it('should let tranfer frozen tokens after frozenTime is over', async () => {
         const instance = await QARK.deployed();
         assert(await utils.transferTest(instance, {
-            from: acc.buyer.ieo,
+            from: acc.seller.exchange.cold,
             to: acc.random('frozenTransferTest'),
             amount: '3000',
             delay: 6000,
-            total: '5000',
+            total: '3000',
             locked: '0'
         }));
     });
