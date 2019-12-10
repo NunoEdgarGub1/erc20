@@ -84,6 +84,8 @@ contract('QARK', async accounts => {
         const pubSaleEnd = pubSaleStart + 65;
         const restrictionEnd = pubSaleEnd + 5;
 
+        console.log('TIMING ::', pubSaleStart, pubSaleEnd, restrictionEnd);
+
         //FROM NOW UNTIL THE OFFICIAL CLOSE TIME
         await instance.setTiming(pubSaleStart, pubSaleEnd, restrictionEnd);
 
