@@ -12,11 +12,13 @@ module.exports = {
             rateUpdater: accounts[4],
             seller: {
                 priv: accounts[5],
-                ieo: accounts[6]
+                exchange: {
+                    hot: accounts[6],
+                    cold: accounts[8],
+                }
             },
             buyer: {
                 priv: accounts[7],
-                ieo: accounts[8],
                 postpub: accounts[9]
             },
             random: seed => {
